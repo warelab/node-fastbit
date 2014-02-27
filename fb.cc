@@ -1,6 +1,7 @@
 #include <node.h>
 #include <ibis.h>
 #include <category.h>
+#include <dictionary.h>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
