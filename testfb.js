@@ -25,8 +25,8 @@ console.log(fb.histogram(args));
 args = {
     select: "weight",
     from: data,
-    begin: 50,
-    end: 400,
+    begin: weight.min[0],
+    end: weight.max[0],
     stride: 50
 };
 console.log("fb.histogram",args);
@@ -40,29 +40,27 @@ args = {
 console.log("fb.histogram",args);
 console.log(fb.histogram(args));
 
-// args = {
-//     select: "height,weight",
-//     from: data,
-//     begin1: 0,
-//     end1: 100,
-//     stride1: 10,
-//     begin2: 0,
-//     end2: 500,
-//     stride2: 50,
-//     where: "1=1"
-// };
-// console.log("fb.scatter",args);
-// console.log(fb.scatter(args));
-// 
-// args = {
-//     select: "height,weight",
-//     from: data,
-//     where: "1=1",
-//     adaptive: true,
-//     nbins1: 10,
-//     nbins2: 10
-// };
-// console.log("fb.scatter",args);
-// console.log(fb.scatter(args));
-// 
+args = {
+    select: "height,weight",
+    from: data,
+    begin1: height.min[0],
+    end1: height.max[0],
+    stride1: 10,
+    begin2: weight.min[0],
+    end2: weight.max[0],
+    stride2: 50
+};
+console.log("fb.scatter",args);
+console.log(fb.scatter(args));
+
+args = {
+    select: "height,weight",
+    from: data,
+    adaptive: true,
+    nbins1: 10,
+    nbins2: 10
+};
+console.log("fb.scatter",args);
+console.log(fb.scatter(args));
+
 
