@@ -3,9 +3,9 @@
     {
       "target_name": "fb",
       "sources": [ "fb.cc" ],
-	  "include_dirs": ["./include"],
-	  "libraries": ["-L../lib",'-lfastbit'],
-      "cflags_cc": [ '-stdlib=libc++' ],
+	  "include_dirs": ["/usr/local/include"],
+	  "libraries": ["-L/usr/local/lib",'-lfastbit'],
+      "cflags_cc": [ '-std=c++11' ],
       "cflags!": [ '-fno-exceptions' ],
       "cflags_cc!": [ '-fno-exceptions' ],
 	  "conditions": [
