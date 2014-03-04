@@ -18,10 +18,11 @@ args = {
     from: data,
     begin: height.min[0],
     end: height.max[0],
-    stride: 1
+    stride: 10
 };
 console.log("fb.histogram",args);
 console.log(fb.histogram(args));
+
 args = {
     select: "weight",
     from: data,
@@ -31,6 +32,16 @@ args = {
 };
 console.log("fb.histogram",args);
 console.log(fb.histogram(args));
+
+args = {
+    select: "height",
+    from: data,
+    adaptive: true,
+    nbins: 10
+};
+console.log("fb.histogram",args);
+console.log(fb.histogram(args));
+
 args = {
     select: "weight",
     from: data,
@@ -63,4 +74,4 @@ args = {
 console.log("fb.scatter",args);
 console.log(fb.scatter(args));
 
-
+console.log(fb.describe({from: data}));

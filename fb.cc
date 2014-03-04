@@ -93,6 +93,49 @@ v8::Handle<v8::Object> TabletoJs(const ibis::table &tbl)
 	return results;
 }
 
+v8::Handle<v8::Value> describe(const v8::Arguments& args)
+{
+	v8::Handle<v8::Object> p = v8::Handle<v8::Object>::Cast(args[0]);
+    
+	if (! p->Has(v8::String::New("from"))) {
+		v8::ThrowException(v8::Exception::TypeError(v8::String::New("Missing 'from' argument")));
+		return v8::Undefined();
+	}
+	std::string data_dir = c_stringify(p->Get(v8::String::New("from")));
+	ibis::table* tbl = ibis::table::create(data_dir.c_str());
+    ibis::table::stringList nms = tbl->columnNames();
+    ibis::table::typeList tps = tbl->columnTypes();
+    v8::Handle<v8::Object> results = v8::Object::New();
+    for (size_t i = 0; i < nms.size(); ++ i) {
+        switch (tps[i]) {
+            case ibis::BYTE:
+            case ibis::UBYTE:
+            case ibis::SHORT:
+            case ibis::USHORT:
+            case ibis::INT:
+            case ibis::UINT:
+            case ibis::LONG:
+            case ibis::ULONG:
+            case ibis::FLOAT:
+            case ibis::DOUBLE: {
+                results->Set(v8::String::New(nms[i]),v8::String::New("Number"));
+                break;
+            }
+            case ibis::TEXT:
+            case ibis::CATEGORY: {
+                results->Set(v8::String::New(nms[i]),v8::String::New("String"));
+                break;
+            }
+            default: {
+                results->Set(v8::String::New(nms[i]),v8::String::New("Other"));
+                break;
+            }
+        }
+    }
+    delete tbl;
+    return results;
+}
+
 // v8::Handle<v8::Value> run_query(v8::Handle<v8::Object> p, ibis::table*& res)
 ibis::table* run_query(v8::Handle<v8::Object> p)
 {
@@ -185,7 +228,6 @@ v8::Handle<v8::Value> histogram(const v8::Arguments& args)
 
     std::vector<const ibis::part*> parts;
     res->getPartitions(parts);
-        fprintf(stderr,"parts.size() %zi\n",parts.size());
     if (parts.size() != 1) {
         v8::ThrowException(v8::Exception::Error(v8::String::New("WTF! expected one partition after preprocessing")));
         return v8::Undefined();
@@ -775,6 +817,7 @@ v8::Handle<v8::Value> MC(const v8::Arguments& args)
 void Init(v8::Handle<v8::Object> target)
 {
 	srand ( time(NULL) );
+    target->Set(v8::String::NewSymbol("describe"), v8::FunctionTemplate::New(describe)->GetFunction());
 	target->Set(v8::String::NewSymbol("SQL"), v8::FunctionTemplate::New(SQL)->GetFunction());
 	target->Set(v8::String::NewSymbol("histogram"), v8::FunctionTemplate::New(histogram)->GetFunction());
 	target->Set(v8::String::NewSymbol("scatter"), v8::FunctionTemplate::New(scatter)->GetFunction());
