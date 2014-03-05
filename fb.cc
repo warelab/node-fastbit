@@ -136,7 +136,6 @@ v8::Handle<v8::Value> describe(const v8::Arguments& args)
     return results;
 }
 
-// v8::Handle<v8::Value> run_query(v8::Handle<v8::Object> p, ibis::table*& res)
 ibis::table* run_query(v8::Handle<v8::Object> p)
 {
 	if (! p->Has(v8::String::New("from"))) {
@@ -198,6 +197,90 @@ v8::Handle<v8::Value> parse_histogram_params(v8::Handle<v8::Object> p,double &be
 	return v8::String::New("OK");
 }
 
+// 1D histogram
+// returns a Javascript object {bounds:[], counts:[]}
+// This function uses ibis::part histogram functions
+// so we preprocess them into a single in-memory table (with one partition).
+//
+// binning is either adaptive or uniform
+v8::Handle<v8::Value> dist(const v8::Arguments& args)
+{
+    // histogram params
+    bool adaptive = false;
+    uint32_t nbins=25;
+    double begin,end,stride;
+
+	// parse args
+	v8::Handle<v8::Object> p = v8::Handle<v8::Object>::Cast(args[0]);
+	v8::Handle<v8::Value> rc = parse_histogram_params(p,begin,end,stride,adaptive,nbins);
+	if (rc->IsUndefined())
+		return rc;
+
+    // init table
+	std::string data_dir = c_stringify(p->Get(v8::String::New("from")));
+	ibis::table* tbl = ibis::table::create(data_dir.c_str());
+	
+	std::string column = c_stringify(p->Get(v8::String::New("column")));
+
+    std::vector<const ibis::part*> parts;
+    tbl->getPartitions(parts);
+    if (parts.size() != 1) {
+        v8::ThrowException(v8::Exception::Error(v8::String::New("expected one partition")));
+        return v8::Undefined();
+    }
+
+	long ierr;
+	v8::Handle<v8::Object> JSON = v8::Object::New();
+	v8::Handle<v8::Array> v8bounds = v8::Array::New();
+	v8::Handle<v8::Array> v8counts = v8::Array::New();
+	if (adaptive) {
+        std::vector<double> bounds;
+        std::vector<uint32_t> counts;
+    	if (p->Has(v8::String::New("where"))) {
+    		std::string query_cnd = c_stringify(p->Get(v8::String::New("where")));
+            ierr = parts[0]->get1DDistribution(query_cnd.c_str(),column.c_str(),nbins,bounds,counts);
+    	}
+    	else {
+            ierr = parts[0]->get1DDistribution(column.c_str(),nbins,bounds,counts);
+    	}
+        if (ierr < 0) {
+            v8::ThrowException(v8::Exception::Error(v8::String::New("adaptive 1D Distribution error")));
+            return v8::Undefined();
+        }
+        // format results
+        for(size_t i=0; i < counts.size(); i++) {
+            v8bounds->Set(i,v8::Number::New(bounds[i]));
+            v8counts->Set(i,v8::Number::New(counts[i]));
+        }
+	}
+	else {
+		std::vector<uint32_t> counts;
+        //         fprintf(stderr,"calling get1DDistribution(\"1=1\",%s,%f,%f,%f,counts)\n",nms[0],begin,end,stride);
+        // ierr = parts[0]->get1DDistribution("1=1",nms[0],begin,end,stride,counts);
+    	if (p->Has(v8::String::New("where"))) {
+    		std::string query_cnd = c_stringify(p->Get(v8::String::New("where")));
+            ierr = tbl->getHistogram(query_cnd.c_str(),column.c_str(),begin,end,stride,counts);
+    	}
+    	else {
+            ierr = tbl->getHistogram("1==1",column.c_str(),begin,end,stride,counts);
+    	}
+        // fprintf(stderr,"back\n");
+		if (ierr < 0) {
+			v8::ThrowException(v8::Exception::Error(v8::String::New("uniform 1D Distribution error")));
+			return v8::Undefined();
+		}
+		// format results
+		double pos = begin;
+		for(size_t i=0; i < counts.size(); i++) {
+			v8bounds->Set(i,v8::Number::New(pos));
+			v8counts->Set(i,v8::Number::New(counts[i]));
+			pos += stride;
+		}
+	}
+	JSON->Set(v8::String::New("bounds"),v8bounds);
+	JSON->Set(v8::String::New("counts"),v8counts);
+	return JSON;
+}
 // 1D histogram
 // returns a Javascript object {bounds:[], counts:[]}
 // This function uses ibis::part histogram functions
@@ -822,6 +905,7 @@ void Init(v8::Handle<v8::Object> target)
     target->Set(v8::String::NewSymbol("describe"), v8::FunctionTemplate::New(describe)->GetFunction());
 	target->Set(v8::String::NewSymbol("SQL"), v8::FunctionTemplate::New(SQL)->GetFunction());
 	target->Set(v8::String::NewSymbol("histogram"), v8::FunctionTemplate::New(histogram)->GetFunction());
+	target->Set(v8::String::NewSymbol("dist"), v8::FunctionTemplate::New(dist)->GetFunction());
 	target->Set(v8::String::NewSymbol("scatter"), v8::FunctionTemplate::New(scatter)->GetFunction());
 	target->Set(v8::String::NewSymbol("logical"), v8::FunctionTemplate::New(logical)->GetFunction());
 	target->Set(v8::String::NewSymbol("cnt"), v8::FunctionTemplate::New(cnt)->GetFunction());

@@ -25,6 +25,39 @@ var schema = {
             }
         }
     },
+    dist: {
+        properties: {
+            column: {
+                type: 'string',
+                description: 'column',
+                required: true
+            },
+            where: {
+                type: 'string',
+                description: 'where clause'
+            },
+            adaptive: {
+                type: 'boolean',
+                description: 'adaptive binning'
+            },
+            nbins: {
+                type: 'integer',
+                description: 'number of bins for adaptive binning'
+            },
+            begin: {
+                type: 'number',
+                description: 'uniform binning min value'
+            },
+            end: {
+                type: 'number',
+                description: 'uniform binning max value'
+            },
+            stride: {
+                type: 'number',
+                description: 'uniform binning bin size'
+            }
+        }
+    },
     histogram: {
         properties: {
             select: {

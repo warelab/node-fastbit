@@ -14,42 +14,42 @@ var weight = fb.SQL({select: "min(weight) as min,max(weight) as max", from: data
 console.log("weight", weight);
 
 args = {
-    select: "height",
+    column: "height",
     from: data,
     begin: height.min[0],
     end: height.max[0],
     stride: 10
 };
-console.log("fb.histogram",args);
-console.log(fb.histogram(args));
+console.log("fb.dist",args);
+console.log(fb.dist(args));
 
 args = {
-    select: "weight",
+    column: "weight",
     from: data,
     begin: weight.min[0],
     end: weight.max[0],
     stride: 50
 };
-console.log("fb.histogram",args);
-console.log(fb.histogram(args));
+console.log("fb.dist",args);
+console.log(fb.dist(args));
 
 args = {
-    select: "height",
+    column: "height",
     from: data,
     adaptive: true,
     nbins: 10
 };
-console.log("fb.histogram",args);
-console.log(fb.histogram(args));
+console.log("fb.dist",args);
+console.log(fb.dist(args));
 
 args = {
-    select: "weight",
+    column: "weight",
     from: data,
     adaptive: true,
     nbins: 10
 };
-console.log("fb.histogram",args);
-console.log(fb.histogram(args));
+console.log("fb.dist",args);
+console.log(fb.dist(args));
 
 args = {
     select: "height,weight",
