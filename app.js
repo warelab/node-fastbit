@@ -5,6 +5,7 @@ var express  = require('express'),
 	http     = require('http'),
     fb       = require('./build/Release/fb');
 
+var port = process.argv.length > 2 ? process.argv[2] : 3000;
 
 var schema = {
     SQL: {
@@ -157,4 +158,5 @@ app.get('/:dataset/:command', function (req, res) {
 });
 
 
-app.listen(3000);
+app.listen(port);
+console.log("server listening on port " + port);
