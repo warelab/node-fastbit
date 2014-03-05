@@ -15,11 +15,6 @@ var schema = {
                 description: 'select clause',
                 required: true
             },
-            from: {
-                type: 'string',
-                description: 'data table to query',
-                required: true
-            },
             where: {
                 type: 'string',
                 description: 'where clause'
@@ -35,11 +30,6 @@ var schema = {
             select: {
                 type: 'string',
                 description: 'select clause',
-                required: true
-            },
-            from: {
-                type: 'string',
-                description: 'data table to query',
                 required: true
             },
             where: {
@@ -73,11 +63,6 @@ var schema = {
             select: {
                 type: 'string',
                 description: 'select clause',
-                required: true
-            },
-            from: {
-                type: 'string',
-                description: 'data table to query',
                 required: true
             },
             where: {
