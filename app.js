@@ -8,7 +8,12 @@ var express  = require('express'),
 var port = process.argv.length > 2 ? process.argv[2] : 3000;
 
 var schema = {
+    describe: {
+        description: "return the names and types of columns",
+        properties: {}
+    },
     SQL: {
+        description: "simple SQL interface",
         properties: {
             select: {
                 type: 'string',
@@ -26,6 +31,7 @@ var schema = {
         }
     },
     dist: {
+        description: "1D distribution of data in a column",
         properties: {
             column: {
                 type: 'string',
@@ -59,6 +65,7 @@ var schema = {
         }
     },
     histogram: {
+        description: "1D distribution of query results",
         properties: {
             select: {
                 type: 'string',
@@ -92,6 +99,7 @@ var schema = {
         }
     },
     scatter: {
+        description: "2D distribution of query results",
         properties: {
             select: {
                 type: 'string',
@@ -156,11 +164,12 @@ app.get('/', function (req, res) {
 
 app.get('/:dataset', function (req, res) {
     var dataset = req.params.dataset;
-    if (datasets.hasOwnProperty(dataset)) {
-        res.json(fb['describe']({from:datasets[dataset].path}));
-    } else {
-        res.json({});
+    
+    var commands = new Object;
+    for(var cmd in schema) {
+        commands[dataset + '/' + cmd] = schema[cmd].description;
     }
+    res.json(commands);
 });
 
 app.get('/:dataset/:command', function (req, res) {
