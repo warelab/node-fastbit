@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "description": "A node.js interface to FastBit",
   "keywords": ["bitmap index","column oriented","database"],
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "main": "app.js",
+  "dependencies": {
+      "express": "3.4.8",
+      "conform": "0.2.5"
   },
   "repository": {
     "type": "git",

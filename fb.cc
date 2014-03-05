@@ -169,11 +169,7 @@ ibis::table* run_query(v8::Handle<v8::Object> p)
     return res;
 }
 
-// histogram params
-bool adaptive = false;
-uint32_t nbins=25;
-double begin,end,stride;
-v8::Handle<v8::Value> parse_histogram_params(v8::Handle<v8::Object> p)
+v8::Handle<v8::Value> parse_histogram_params(v8::Handle<v8::Object> p,double &begin, double &end, double &stride,bool &adaptive,uint32_t &nbins)
 {
 	if (p->Has(v8::String::New("adaptive")))
 		if (p->Get(v8::String::New("adaptive"))->IsTrue()) {
@@ -210,10 +206,14 @@ v8::Handle<v8::Value> parse_histogram_params(v8::Handle<v8::Object> p)
 // binning is either adaptive or uniform
 v8::Handle<v8::Value> histogram(const v8::Arguments& args)
 {
+    // histogram params
+    bool adaptive = false;
+    uint32_t nbins=25;
+    double begin,end,stride;
 
 	// parse args
 	v8::Handle<v8::Object> p = v8::Handle<v8::Object>::Cast(args[0]);
-	v8::Handle<v8::Value> rc = parse_histogram_params(p);
+	v8::Handle<v8::Value> rc = parse_histogram_params(p,begin,end,stride,adaptive,nbins);
 	if (rc->IsUndefined())
 		return rc;
 
@@ -274,11 +274,7 @@ v8::Handle<v8::Value> histogram(const v8::Arguments& args)
 	return JSON;
 }
 
-// 2D histogram params
-uint32_t nbins1=25;
-uint32_t nbins2=25;
-double begin1,end1,stride1,begin2,end2,stride2;
-v8::Handle<v8::Value> parse_scatter_params(v8::Handle<v8::Object> p)
+v8::Handle<v8::Value> parse_scatter_params(v8::Handle<v8::Object> p, bool &adaptive, uint32_t &nbins1, uint32_t &nbins2, double &begin1, double &end1, double &stride1, double &begin2, double &end2, double &stride2)
 {
 	if (p->Has(v8::String::New("adaptive")))
 		if (p->Get(v8::String::New("adaptive"))->IsTrue()) {
@@ -332,9 +328,15 @@ v8::Handle<v8::Value> parse_scatter_params(v8::Handle<v8::Object> p)
 // binning is either adaptive or uniform
 v8::Handle<v8::Value> scatter(const v8::Arguments& args)
 {
+    // 2D histogram params
+    bool adaptive = false;
+    uint32_t nbins1=25;
+    uint32_t nbins2=25;
+    double begin1,end1,stride1,begin2,end2,stride2;
+
 	// parse args
 	v8::Handle<v8::Object> p = v8::Handle<v8::Object>::Cast(args[0]);
-	v8::Handle<v8::Value> rc = parse_scatter_params(p);
+	v8::Handle<v8::Value> rc = parse_scatter_params(p,adaptive,nbins1,nbins2,begin1,end1,stride1,begin2,end2,stride2);
 	if (rc->IsUndefined())
 		return rc;
 
