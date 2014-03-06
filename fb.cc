@@ -409,6 +409,95 @@ v8::Handle<v8::Value> parse_scatter_params(v8::Handle<v8::Object> p, bool &adapt
 // so we preprocess them into a single in-memory table (with one partition).
 //
 // binning is either adaptive or uniform
+v8::Handle<v8::Value> dist2D(const v8::Arguments& args)
+{
+    // 2D histogram params
+    bool adaptive = false;
+    uint32_t nbins1=25;
+    uint32_t nbins2=25;
+    double begin1,end1,stride1,begin2,end2,stride2;
+
+	// parse args
+	v8::Handle<v8::Object> p = v8::Handle<v8::Object>::Cast(args[0]);
+	v8::Handle<v8::Value> rc = parse_scatter_params(p,adaptive,nbins1,nbins2,begin1,end1,stride1,begin2,end2,stride2);
+	if (rc->IsUndefined())
+		return rc;
+
+    // init table
+	std::string data_dir = c_stringify(p->Get(v8::String::New("from")));
+	ibis::table* tbl = ibis::table::create(data_dir.c_str());
+	
+	std::string column1 = c_stringify(p->Get(v8::String::New("column1")));
+	std::string column2 = c_stringify(p->Get(v8::String::New("column2")));
+
+    std::vector<const ibis::part*> parts;
+    tbl->getPartitions(parts);
+    if (parts.size() != 1) {
+        v8::ThrowException(v8::Exception::Error(v8::String::New("WTF! expected one partition after preprocessing")));
+        return v8::Undefined();
+    }
+
+	long ierr;
+	v8::Handle<v8::Object> JSON = v8::Object::New();
+	v8::Handle<v8::Array> v8bounds1 = v8::Array::New();
+	v8::Handle<v8::Array> v8bounds2 = v8::Array::New();
+	v8::Handle<v8::Array> v8counts = v8::Array::New();
+	std::vector<double> bounds1;
+	std::vector<double> bounds2;
+	std::vector<uint32_t> counts;
+	if (adaptive) {
+    	if (p->Has(v8::String::New("where"))) {
+    		std::string query_cnd = c_stringify(p->Get(v8::String::New("where")));
+            ierr = parts[0]->get2DDistribution(query_cnd.c_str(),column1.c_str(),column2.c_str(),nbins1,nbins2,bounds1,bounds2,counts);
+        }
+        else
+            ierr = parts[0]->get2DDistribution(column1.c_str(),column2.c_str(),nbins1,nbins2,bounds1,bounds2,counts);
+
+        if (ierr < 0) {
+            v8::ThrowException(v8::Exception::Error(v8::String::New("adaptive 2D Distribution error")));
+            return v8::Undefined();
+        }
+        // format results
+        for(size_t i=0; i < counts.size(); i++)
+            v8counts->Set(i,v8::Number::New(counts[i]));
+        for(size_t i=0; i < bounds1.size(); i++)
+            v8bounds1->Set(i,v8::Number::New(bounds1[i]));
+        for(size_t i=0; i < bounds2.size(); i++)
+            v8bounds2->Set(i,v8::Number::New(bounds2[i]));
+	}
+	else {
+		std::vector<uint32_t> counts;
+    	if (p->Has(v8::String::New("where"))) {
+    		std::string query_cnd = c_stringify(p->Get(v8::String::New("where")));
+            ierr = parts[0]->get2DDistribution(query_cnd.c_str(),column1.c_str(),begin1,end1,stride1,column2.c_str(),begin2,end2,stride2,counts);
+    	}
+        else
+            ierr = parts[0]->get2DDistribution("1==1",column1.c_str(),begin1,end1,stride1,column2.c_str(),begin2,end2,stride2,counts);
+
+        // ierr = res->getHistogram2D("1=1",nms[0],begin1,end1,stride1,nms[1],begin2,end2,stride2,counts);
+		if (ierr < 0) {
+			v8::ThrowException(v8::Exception::Error(v8::String::New("uniform 2D Distribution error")));
+			return v8::Undefined();
+		}
+		// format results
+		for(size_t i=0; i < counts.size(); i++)
+			v8counts->Set(i,v8::Number::New(counts[i]));
+		double pos = begin1;
+		for(size_t i=0; i < bounds1.size(); i++) {
+			v8bounds1->Set(i,v8::Number::New(pos));
+			pos += stride1;
+		}
+		pos = begin2;
+		for(size_t i=0; i < bounds2.size(); i++) {
+			v8bounds2->Set(i,v8::Number::New(pos));
+			pos += stride2;
+		}
+	}
+	JSON->Set(v8::String::New("counts"),v8counts);
+	JSON->Set(v8::String::New("bounds1"),v8bounds1);
+	JSON->Set(v8::String::New("bounds2"),v8bounds2);
+	return JSON;
+}
 v8::Handle<v8::Value> scatter(const v8::Arguments& args)
 {
     // 2D histogram params
@@ -906,6 +995,7 @@ void Init(v8::Handle<v8::Object> target)
 	target->Set(v8::String::NewSymbol("SQL"), v8::FunctionTemplate::New(SQL)->GetFunction());
 	target->Set(v8::String::NewSymbol("histogram"), v8::FunctionTemplate::New(histogram)->GetFunction());
 	target->Set(v8::String::NewSymbol("dist"), v8::FunctionTemplate::New(dist)->GetFunction());
+	target->Set(v8::String::NewSymbol("dist2D"), v8::FunctionTemplate::New(dist2D)->GetFunction());
 	target->Set(v8::String::NewSymbol("scatter"), v8::FunctionTemplate::New(scatter)->GetFunction());
 	target->Set(v8::String::NewSymbol("logical"), v8::FunctionTemplate::New(logical)->GetFunction());
 	target->Set(v8::String::NewSymbol("cnt"), v8::FunctionTemplate::New(cnt)->GetFunction());

@@ -2,7 +2,6 @@
 var express  = require('express'),
     app      = express(),
     validate = require('conform').validate,
-	http     = require('http'),
     fb       = require('./build/Release/fb');
 
 var port = process.argv.length > 2 ? process.argv[2] : 3000;
@@ -59,6 +58,61 @@ var schema = {
                 description: 'uniform binning max value'
             },
             stride: {
+                type: 'number',
+                description: 'uniform binning bin size'
+            }
+        }
+    },
+    dist2D: {
+        description: "2D distribution of 2 columns",
+        properties: {
+            column1: {
+                type: 'string',
+                description: 'column1',
+                required: true
+            },
+            column2: {
+                type: 'string',
+                description: 'column2',
+                required: true
+            },
+            where: {
+                type: 'string',
+                description: 'where clause'
+            },
+            adaptive: {
+                type: 'boolean',
+                description: 'adaptive binning'
+            },
+            nbins1: {
+                type: 'integer',
+                description: 'number of bins for adaptive binning'
+            },
+            begin1: {
+                type: 'number',
+                description: 'uniform binning min value'
+            },
+            end1: {
+                type: 'number',
+                description: 'uniform binning max value'
+            },
+            stride1: {
+                type: 'number',
+                description: 'uniform binning bin size'
+            },
+            nbins2: {
+                type: 'integer',
+                description: 'number of bins for adaptive binning'
+            },
+            begin2: {
+                type: 'number',
+                description: 'uniform binning min value'
+            },
+            end2: {
+                type: 'number',
+                description: 'uniform binning max value'
+            },
+            stride2: {
                 type: 'number',
                 description: 'uniform binning bin size'
             }
@@ -150,12 +204,8 @@ var schema = {
     }
 };
 
-var datasets = {
-    baseball: {
-        path:"example_data/Master",
-        description:"baseball stats"
-    }
-};
+var fs    = require('fs');
+var datasets = JSON.parse(fs.readFileSync('config/fbdata.json', 'utf8'));
 
 app.use(app.router);
 app.get('/', function (req, res) {
@@ -176,6 +226,9 @@ app.get('/:dataset/:command', function (req, res) {
     var dataset = req.params.dataset;
 	var command = req.params.command;
     req.query.from = datasets[dataset].path;
+    if (req.query.hasOwnProperty('part')) {
+        req.query.from += "/" + req.query.part;
+    }
 	var check = validate(req.query, schema[command], {cast:true,castSource:true});
 	if (check['valid']) {
         res.json(fb[command](req.query));
