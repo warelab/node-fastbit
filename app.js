@@ -210,7 +210,7 @@ var datasets = JSON.parse(fs.readFileSync('config/fbdata.json', 'utf8'));
 app.use(express.logger());
 app.use(express.compress());
 app.use(cache.middleware({
-    path: /\//,
+    path: /^\//,
     clean: true
 }));
 app.use(app.router);
