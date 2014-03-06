@@ -483,12 +483,12 @@ v8::Handle<v8::Value> dist2D(const v8::Arguments& args)
 		for(size_t i=0; i < counts.size(); i++)
 			v8counts->Set(i,v8::Number::New(counts[i]));
 		double pos = begin1;
-		for(size_t i=0; i < bounds1.size(); i++) {
+		for(size_t i=0; pos <= end1; i++) {
 			v8bounds1->Set(i,v8::Number::New(pos));
 			pos += stride1;
 		}
 		pos = begin2;
-		for(size_t i=0; i < bounds2.size(); i++) {
+		for(size_t i=0; pos <= end2; i++) {
 			v8bounds2->Set(i,v8::Number::New(pos));
 			pos += stride2;
 		}
@@ -565,12 +565,12 @@ v8::Handle<v8::Value> scatter(const v8::Arguments& args)
 		for(size_t i=0; i < counts.size(); i++)
 			v8counts->Set(i,v8::Number::New(counts[i]));
 		double pos = begin1;
-		for(size_t i=0; i < bounds1.size(); i++) {
+		for(size_t i=0; pos <= end1; i++) {
 			v8bounds1->Set(i,v8::Number::New(pos));
 			pos += stride1;
 		}
 		pos = begin2;
-		for(size_t i=0; i < bounds2.size(); i++) {
+		for(size_t i=0; pos <= end2; i++) {
 			v8bounds2->Set(i,v8::Number::New(pos));
 			pos += stride2;
 		}

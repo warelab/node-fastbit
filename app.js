@@ -1,6 +1,7 @@
 // setup some dependencies
 var express  = require('express'),
     app      = express(),
+    cache    = require('web-cache'),
     validate = require('conform').validate,
     fb       = require('./build/Release/fb');
 
@@ -206,13 +207,18 @@ var schema = {
 
 var fs    = require('fs');
 var datasets = JSON.parse(fs.readFileSync('config/fbdata.json', 'utf8'));
-
+app.use(express.logger());
+app.use(express.compress());
+app.use(cache.middleware({
+    path: /\//,
+    clean: true
+}));
 app.use(app.router);
-app.get('/', function (req, res) {
+app.get('/', function (req, res, next) {
     res.json(datasets);
 });
 
-app.get('/:dataset', function (req, res) {
+app.get('/:dataset', function (req, res, next) {
     var dataset = req.params.dataset;
     
     var commands = new Object;
@@ -222,7 +228,7 @@ app.get('/:dataset', function (req, res) {
     res.json(commands);
 });
 
-app.get('/:dataset/:command', function (req, res) {
+app.get('/:dataset/:command', function (req, res, next) {
     var dataset = req.params.dataset;
 	var command = req.params.command;
     req.query.from = datasets[dataset].path;
