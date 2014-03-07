@@ -7,7 +7,7 @@
   "dependencies": {
       "express": "3.4.8",
       "conform": "0.2.5",
-      "web-cache": "0.0.3"
+      "web-cache": "0.1.0"
   },
   "repository": {
     "type": "git",
