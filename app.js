@@ -4,12 +4,13 @@ var express  = require('express'),
     cache    = require('web-cache'),
     validate = require('conform').validate,
     fb       = require('./build/Release/fb'),
-    schema   = require('./config/schema').schema;
+    schema   = require('./config/schema').schema,
+    fs       = require('fs'),
+    mongodb  = require('mongodb').MongoClient;
 
 var port = process.argv.length > 2 ? process.argv[2] : 3000;
 
-var fs    = require('fs');
-var datasets = JSON.parse(fs.readFileSync('config/fbdata.json', 'utf8'));
+var meta = JSON.parse(fs.readFileSync('config/fbdata.json', 'utf8'));
 app.use(express.logger());
 app.use(express.compress());
 app.use(cache.middleware({
@@ -17,7 +18,40 @@ app.use(cache.middleware({
 }));
 app.use(app.router);
 app.get('/', function (req, res, next) {
-    res.json(datasets);
+    var datasets = new Object();
+    for(var k in meta.datasets) {
+        if (meta.datasets.hasOwnProperty(k)) {
+            datasets[k] = meta.datasets[k];
+        }
+    }
+    if (meta.hasOwnProperty('mongodb')) {
+        mongodb.connect('mongodb://'
+            + meta.mongodb.host + ':'
+            + meta.mongodb.port + '/'
+            + meta.mongodb.db
+            , {db: {native_parser: true}}, function(err, db) {
+                if (err) throw err;
+                var collection = db
+                    .collection(meta.mongodb.collection)
+                    .find({})
+                    .toArray(function(err, sets) {
+                        for(var i in sets) {
+                            var set = sets[i];
+                            if (set.hasOwnProperty('id') &&
+                                set.hasOwnProperty('path') &&
+                                set.hasOwnProperty('description')) {
+                                    datasets[set.id] = {
+                                        path: set.path,
+                                        description: set.description
+                                    }
+                            }
+                        }
+                        res.json(datasets);
+                        db.close();
+                });
+        });
+    }
+    else res.json(datasets);
 });
 
 app.get('/:dataset', function (req, res, next) {
