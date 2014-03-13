@@ -1,0 +1,3 @@
+{"setID": 1, "path": "meth/CpG", "description": "CpG", "genomeID": 1, "private": false, "owner": 0}
+{"setID": 2, "path": "meth/CHG", "description": "CHG", "genomeID": 1, "private": false, "owner": 0}
+{"setID": 3, "path": "meth/CHH", "description": "CHH", "genomeID": 1, "private": false, "owner": 0}
