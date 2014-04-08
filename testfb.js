@@ -75,3 +75,17 @@ console.log("fb.scatter",args);
 console.log(fb.scatter(args));
 
 console.log(fb.describe({from: data}));
+
+args = {
+    from: data,
+    column1: "height",
+    begin1: height.min[0],
+    end1: height.max[0],
+    stride1: 9,
+    column2: "weight",
+    begin2: weight.min[0],
+    end2: weight.max[0],
+    stride2: 52
+}
+console.log("fb.dist2D",args);
+console.log(fb.dist2D(args));

@@ -277,8 +277,8 @@ v8::Handle<v8::Value> dist(const v8::Arguments& args)
 			pos += stride;
 		}
 	}
-	JSON->Set(v8::String::New("bounds"),v8bounds);
-	JSON->Set(v8::String::New("counts"),v8counts);
+	JSON->Set(v8::String::New(column.c_str()),v8bounds);
+	JSON->Set(v8::String::New("count"),v8counts);
 	return JSON;
 }
 // 1D histogram
@@ -352,8 +352,8 @@ v8::Handle<v8::Value> histogram(const v8::Arguments& args)
 			pos += stride;
 		}
 	}
-	JSON->Set(v8::String::New("bounds"),v8bounds);
-	JSON->Set(v8::String::New("counts"),v8counts);
+	JSON->Set(v8::String::New(nms[0]),v8bounds);
+	JSON->Set(v8::String::New("count"),v8counts);
 	return JSON;
 }
 
@@ -493,9 +493,9 @@ v8::Handle<v8::Value> dist2D(const v8::Arguments& args)
 			pos += stride2;
 		}
 	}
-	JSON->Set(v8::String::New("counts"),v8counts);
-	JSON->Set(v8::String::New("bounds1"),v8bounds1);
-	JSON->Set(v8::String::New("bounds2"),v8bounds2);
+	JSON->Set(v8::String::New("count"),v8counts);
+	JSON->Set(v8::String::New(column1.c_str()),v8bounds1);
+	JSON->Set(v8::String::New(column2.c_str()),v8bounds2);
 	return JSON;
 }
 v8::Handle<v8::Value> scatter(const v8::Arguments& args)
@@ -575,9 +575,9 @@ v8::Handle<v8::Value> scatter(const v8::Arguments& args)
 			pos += stride2;
 		}
 	}
-	JSON->Set(v8::String::New("counts"),v8counts);
-	JSON->Set(v8::String::New("bounds1"),v8bounds1);
-	JSON->Set(v8::String::New("bounds2"),v8bounds2);
+	JSON->Set(v8::String::New("count"),v8counts);
+	JSON->Set(v8::String::New(nms[0]),v8bounds1);
+	JSON->Set(v8::String::New(nms[1]),v8bounds2);
 	return JSON;
 }
 
